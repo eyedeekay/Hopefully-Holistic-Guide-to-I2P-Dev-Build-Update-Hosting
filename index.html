@@ -109,20 +109,19 @@
 <ol start="2" type="1">
 <li>When you see:</li>
 </ol>
-<pre class="make"><code>[input] Enter su3 key name (you@mail.i2p):
-
-3. Finally, when you see:
-
-```make
-[input] Enter su3 key password for you@mail.i2p:</code></pre>
+<pre class="make"><code>[input] Enter su3 key name (you@mail.i2p):</code></pre>
+<ol start="3" type="1">
+<li>Finally, when you see:</li>
+</ol>
+<pre class="make"><code>[input] Enter su3 key password for you@mail.i2p:</code></pre>
 <p>Enter the password for your keystore. You will end up with a signed update file named <code>i2pupdate.su3</code> in your directory. That is your signed update file, which you will place in your update server in the next step.</p>
 <p>There are different kinds of I2P updates now, registered via the <code>UpdatePostProcessor</code> system. You can, for example, make an “Executable” <code>UpdatePostProcessor</code> or a “DMG” <code>UpdatePostProcessor</code> instead. When you generate an <code>.su3</code> for such a file, you may once again use <code>i2pk</code> to make the process easier. For example, to build an Executable based updater, use:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true"></a><span class="ex">./i2pk</span> -p <span class="va">$HOME</span>/.i2p-plugin-keys <span class="kw">\</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true"></a>    <span class="ex">-s</span> you@mail.i2p <span class="kw">\</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true"></a>    <span class="ex">-t</span> RSA_SHA512_4096 <span class="kw">\</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true"></a>    <span class="ex">-n</span> newssigner <span class="kw">\</span></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true"></a>    <span class="ex">-f</span> EXE <span class="kw">\</span></span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true"></a>    <span class="ex">-c</span> router sign i2pupdate.exe</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a><span class="ex">./i2pk</span> -p <span class="va">$HOME</span>/.i2p-plugin-keys <span class="kw">\</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true"></a>    <span class="ex">-s</span> you@mail.i2p <span class="kw">\</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true"></a>    <span class="ex">-t</span> RSA_SHA512_4096 <span class="kw">\</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true"></a>    <span class="ex">-n</span> newssigner <span class="kw">\</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true"></a>    <span class="ex">-f</span> EXE <span class="kw">\</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true"></a>    <span class="ex">-c</span> router sign i2pupdate.exe</span></code></pre></div>
 <h3 id="setting-up-a-download-server">Setting up a Download Server</h3>
 <p>Now you’re able to notify your users that there is an update, but you need somewhere to host the actual download.</p>
 <h3 id="setting-up-a-bittorrent-tracker">Setting up a Bittorrent Tracker</h3>
