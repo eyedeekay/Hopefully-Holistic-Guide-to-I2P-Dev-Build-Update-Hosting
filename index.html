@@ -11,7 +11,7 @@
 <ul>
 <li>An I2P router installed on your system.</li>
 <li><code>python3</code>, <code>pip3</code> and <code>bash</code> for generating the news feeds</li>
-<li>Virtualenv or Docker to isolate the feed generator dependencies(optional but a good idea)</li>
+<li><code>virtualenv</code> or <code>docker</code> to isolate the feed generator dependencies(optional but a good idea)</li>
 <li><code>git</code> for obtaining software from the internet in source form</li>
 </ul>
 <p>If you’re on Debian or Ubuntu linux, this will satisfy the dependencies:</p>
@@ -49,7 +49,7 @@
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="bu">.</span> <span class="ex">env/bin/activate</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="ex">pip</span> install .</span></code></pre></div>
 <h4 id="if-you-want-to-use-docker">If you want to use <code>docker</code></h4>
-<p>Docker is also capable of isolating these dependencies and can be used instead of <code>virtualenv</code>.</p>
+<p><code>docker</code> is also capable of isolating these dependencies and can be used instead of <code>virtualenv</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="ex">You</span><span class="st">&#39;re done, actually. The container has all the dependencies managed automatically.</span></span></code></pre></div>
 <h4 id="if-you-want-to-use-neither">If you want to use neither</h4>
 <p>As long as you aren’t using the <code>newsfeed</code> package from python anywhere else, you should also be able to just <code>pip install</code> the dependencies. This is the least stable way to do things and only recommended if you host your newsfeed in a dedicated VM.</p>
