@@ -42,7 +42,7 @@ and can be viewed [on my github](https://github.com/eyedeekay/Generate-Plugin-Si
 you downloaded `i2pk`.
 
 ```sh
-./i2pk -p $HOME/i2p-dev-keys \
+./i2pk -p $HOME/.i2p-plugin-keys \
     -s you@mail.i2p \
     -t RSA_SHA512_4096 \
     -n newssigner \
@@ -60,6 +60,11 @@ Next, you'll need to set up a News Server. In I2P, a News Server is a hidden ser
 serves up XML files in signed, zipped bundles. You sign these bundles with the keys we
 generated in the previous step.
 
+#### `docker` and `virtualenv`
+
+It is highly recommended that you isolate the python dependencies you need using either
+`docker` or `virtualenv`, depending on your preference.
+
 1. To get started, clone the news server software.
 
 ```sh
@@ -69,7 +74,7 @@ git clone https://github.com/i2p/i2p.newsxml
 2. Next, you'll need to set up the news server software. If you got all the dependencies
 from "What you need to get started" you should be able to run the following commands:
 
-#### If you want to use `virtualenv`
+##### If you want to use `virtualenv`
 
 Using `virtualenv` is recommended for anyone who wants to build newsfeeds on their
 system.
@@ -80,7 +85,7 @@ system.
 pip install .
 ```
 
-#### If you want to use `docker`
+##### If you want to use `docker`
 
 `docker` is also capable of isolating these dependencies and can be used instead of
 `virtualenv`.
@@ -89,7 +94,7 @@ pip install .
 You're done, actually. The container has all the dependencies managed automatically.
 ```
 
-#### If you want to use neither
+##### If you want to use neither
 
 As long as you aren't using the `newsfeed` package from python anywhere else,
 you should also be able to just `pip install` the dependencies. This is the least
@@ -105,7 +110,33 @@ you still aren't set up to serve the news feeds to people. Since we're not ready
 do that for real yet, to practice, let's build the existing feeds, and copy them over
 to your web server.
 
-#### If you used `pip` or `virtualenv` in the last step
+#### Configuring the newsfeed generator
+
+The newsfeed generator can use a configuration file, called `etc/su3.vars.custom`, which
+you should edit.
+
+```sh
+# Install dir
+I2P=/home/you/i2p
+# private key keystore
+KS=/home/you/.i2p-plugin-keys/newssigner-su3-keystore.ks
+# signer
+SIGNER=you@mail.i2p
+```
+
+If you're using `docker`, you should use `etc/su3.vars.custom.docker` instead, and omit
+the `$HOME` directory from the config lines.
+
+```sh
+# Install dir
+I2P=/i2p
+# private key keystore
+KS=/.i2p-plugin-keys/newssigner-su3-keystore.ks
+# signer
+SIGNER=you@mail.i2p
+```
+
+##### If you used `pip` or `virtualenv` in the last step
 
 If you used `pip` or `virtualenv` to set up your feed generator, then you need to
 generate the feeds and `.su3` bundles first, then manually copy them to the web server
@@ -135,7 +166,7 @@ sudo -u i2psvc cp -r ./build /var/lib/i2p/i2p-config/eepsite/docroot/news
 cp -r ./build $HOME/.i2p/eepsite/docroot/news
 ```
 
-#### If you used `docker` in the last step
+##### If you used `docker` in the last step
 
 All you need to do is the following two commands. The first one will generate the
 `./build` directory and all the files that you need to serve. After it runs, take
@@ -156,8 +187,69 @@ prompt you for a password.
 ./docker-newsxml.sh
 ```
 
-### Setting up a Download Server
+Now you're ready to host your news feeds.
 
 ### Signing your Update
 
+Now you're prepared to build and sign newsfeeds, however, you still need to build
+and sign the updates themselves. How you build the updates is going to depend on
+how you build your app, but for the first example we're going to assume you're building
+an I2P router from the `i2p.i2p` source. In `i2p.i2p` there is an `ant` target that
+runs the signing command, you can use it with:
+
+```sh
+ant signed-updater200
+```
+
+1. When you run this command, you'll be prompted to enter your signing key details. When you
+see:
+
+```make
+-sign-update:
+    [input] Enter su3 private signing key store:
+```
+
+2. When you see:
+
+```make
+[input] Enter su3 key name (you@mail.i2p):
+
+3. Finally, when you see:
+
+```make
+[input] Enter su3 key password for you@mail.i2p:
+```
+
+Enter the password for your keystore. You will end up with a signed update file named
+`i2pupdate.su3` in your directory. That is your signed update file, which you will place
+in your update server in the next step.
+
+There are different kinds of I2P updates now, registered via the `UpdatePostProcessor`
+system. You can, for example, make an "Executable" `UpdatePostProcessor` or a "DMG"
+`UpdatePostProcessor` instead. When you generate an `.su3` for such a file, you may
+once again use `i2pk` to make the process easier. For example, to build an Executable
+based updater, use:
+
+```sh
+./i2pk -p $HOME/.i2p-plugin-keys \
+    -s you@mail.i2p \
+    -t RSA_SHA512_4096 \
+    -n newssigner \
+    -f EXE \
+    -c router sign i2pupdate.exe
+```
+
+### Setting up a Download Server
+
+Now you're able to notify your users that there is an update, but you need somewhere
+to host the actual download.
+
 ### Setting up a Bittorrent Tracker
+
+Strictly speaking you don't need to set up your own tracker, but I think you should.
+It's easy and reliable.
+
+### Self-Publishing your update
+
+Finally, now that you've got the news server, the news feeds, the download server, and
+an updater.
