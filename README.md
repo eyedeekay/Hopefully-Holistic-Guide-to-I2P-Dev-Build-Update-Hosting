@@ -18,10 +18,10 @@ If you're on Debian or Ubuntu linux, this will satisfy the dependencies:
 
 ```sh
 sudo apt-get install python \
-python-dev \
-python-virtualenv \
-libxml2-dev \
-libxslt1-dev
+    python-dev \
+    python-virtualenv \
+    libxml2-dev \
+    libxslt1-dev
 ```
 
 In other systems, you'll need to determine the similar steps to install this
@@ -43,10 +43,10 @@ you downloaded `i2pk`.
 
 ```sh
 ./i2pk -p $HOME/i2p-dev-keys \
-        -s you@mail.i2p \
-        -t RSA_SHA512_4096 \
-        -n newssigner \
-        -c router generate_keys
+    -s you@mail.i2p \
+    -t RSA_SHA512_4096 \
+    -n newssigner \
+    -c router generate_keys
 cp ~/i2p/certificates/router/you_at_mail.i2p ~/i2p/certificates/news/you_at_mail.i2p
 ```
 
@@ -105,15 +105,56 @@ you still aren't set up to serve the news feeds to people. Since we're not ready
 do that for real yet, to practice, let's build the existing feeds, and copy them over
 to your web server.
 
-#### If you used `docker` in the last step
+#### If you used `pip` or `virtualenv` in the last step
 
-All you need to do is the following two commands:
+If you used `pip` or `virtualenv` to set up your feed generator, then you need to
+generate the feeds and `.su3` bundles first, then manually copy them to the web server
+you want to use. In this case we're going to assume the one that comes with I2P, but
+basically any web server will works. The first step will generate the `./build` directory and
+all the files that you need to serve. After it runs, take a moment to examine the contents of
+`./build`. After the second command runs, the feeds can be previewed at `http://localhost:7658`.
+
+1. Start by building the feeds. Make sure you're in your `virtualenv` if you're using it,
+and run the command:
 
 ```sh
-
+./new.sh
 ```
 
-#### If you used `pip` or `virtualenv`
+2. If you used `pip` or `virtualenv` then we will also be using the web server that is
+built into I2P. When this step is complete, the feeds can be previewed at
+`http://localhost:7658`.
+
+```sh
+# Use this command if you're on Debian or Ubuntu a service
+sudo -u i2psvc cp -r ./build /var/lib/i2p/i2p-config/eepsite/docroot/news
+```
+
+```sh
+# Use this command if you're using a "User" install or the `.jar` package
+cp -r ./build $HOME/.i2p/eepsite/docroot/news
+```
+
+#### If you used `docker` in the last step
+
+All you need to do is the following two commands. The first one will generate the
+`./build` directory and all the files that you need to serve. After it runs, take
+a moment to examine the contents of `./build`. The second command takes the build
+directory and places it in the document root of a light web server, which will serve
+the built feeds on `http://localhost:3000`.
+
+1. The first command generates the feeds and turns them into signed bundles. This will
+prompt you for a password.
+
+```sh
+./docker-news.sh
+```
+
+2. The second command runs the web server and serves the feeds on `localhost:3000`
+
+```sh
+./docker-newsxml.sh
+```
 
 ### Setting up a Download Server
 
