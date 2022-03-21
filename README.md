@@ -10,7 +10,7 @@ being a dev build that you host yourself or for a small audience of testers.
 
 - An I2P router installed on your system.
 - `python3`, `pip3` and `bash` for generating the news feeds
-- Virtualenv or Docker to isolate the feed generator dependencies(optional but
+- `virtualenv` or `docker` to isolate the feed generator dependencies(optional but
  a good idea)
 - `git` for obtaining software from the internet in source form
 
@@ -82,7 +82,7 @@ pip install .
 
 #### If you want to use `docker`
 
-Docker is also capable of isolating these dependencies and can be used instead of
+`docker` is also capable of isolating these dependencies and can be used instead of
 `virtualenv`.
 
 ```sh
@@ -100,7 +100,20 @@ VM.
 pip install .
 ```
 
-3. After you've done that, you're adequately configured
+3. After you've done that, you're adequately configured to build news feeds. However,
+you still aren't set up to serve the news feeds to people. Since we're not ready to
+do that for real yet, to practice, let's build the existing feeds, and copy them over
+to your web server.
+
+#### If you used `docker` in the last step
+
+All you need to do is the following two commands:
+
+```sh
+
+```
+
+#### If you used `pip` or `virtualenv`
 
 ### Setting up a Download Server
 

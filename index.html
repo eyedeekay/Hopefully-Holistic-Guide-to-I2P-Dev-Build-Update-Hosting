@@ -55,8 +55,12 @@
 <p>As long as you aren’t using the <code>newsfeed</code> package from python anywhere else, you should also be able to just <code>pip install</code> the dependencies. This is the least stable way to do things and only recommended if you host your newsfeed in a dedicated VM.</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="ex">pip</span> install .</span></code></pre></div>
 <ol start="3" type="1">
-<li>After you’ve done that, you’re adequately configured</li>
+<li>After you’ve done that, you’re adequately configured to build news feeds. However, you still aren’t set up to serve the news feeds to people. Since we’re not ready to do that for real yet, to practice, let’s build the existing feeds, and copy them over to your web server.</li>
 </ol>
+<h4 id="if-you-used-docker-in-the-last-step">If you used <code>docker</code> in the last step</h4>
+<p>All you need to do is the following two commands:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"></code></pre></div>
+<h4 id="if-you-used-pip-or-virtualenv">If you used <code>pip</code> or <code>virtualenv</code></h4>
 <h3 id="setting-up-a-download-server">Setting up a Download Server</h3>
 <h3 id="signing-your-update">Signing your Update</h3>
 <h3 id="setting-up-a-bittorrent-tracker">Setting up a Bittorrent Tracker</h3>
