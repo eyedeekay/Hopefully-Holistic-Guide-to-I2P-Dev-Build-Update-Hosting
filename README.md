@@ -6,7 +6,7 @@ where every step is laid out from end-to-end. Having done it a couple times, I
 suppose I'm the apt person to write such a document, with the proposed target
 being a dev build that you host yourself or for a small audience of testers.
 
-## What you need to get started:
+## What you need to get started
 
 - An I2P router installed on your system.
 - `python3`, `pip3` and `bash` for generating the news feeds
