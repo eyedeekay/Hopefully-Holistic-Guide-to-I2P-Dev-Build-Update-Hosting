@@ -42,7 +42,7 @@ trust your keys.
 
 ### Setting up a News Server
 
-Next
+Next, you'll need to set up a News Server.
 
 ### Setting up a Download Server
 
