@@ -132,12 +132,13 @@
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true"></a><span class="fu">mkdir</span> -p <span class="va">$HOME</span>/.i2p/eepsite/docroot/files</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true"></a><span class="fu">cp</span> ./i2pupdate.su3 <span class="va">$HOME</span>/.i2p/eepsite/docroot/files</span></code></pre></div>
 <p>If you don’t want to use that, any static file server with an I2P tunnel pointed at it will do. For example, you can use this:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a><span class="fu">mkdir</span> -p <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">/update-server&quot;</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true"></a><span class="fu">cp</span> ./i2pupdate.su3 <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">/update-server&quot;</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true"></a><span class="ex">docker</span> run -d <span class="kw">\</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true"></a>    <span class="ex">-v</span> <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">/update-server&quot;</span>:/web <span class="kw">\</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true"></a>    <span class="ex">-p</span> 8080:8080 <span class="kw">\</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true"></a>    <span class="ex">halverneus</span>/static-file-server:<span class="ex">latest</span></span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a><span class="co"># This is a suggestion for people who want to use docker, for instance</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true"></a><span class="fu">mkdir</span> -p <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">/update-server&quot;</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true"></a><span class="fu">cp</span> ./i2pupdate.su3 <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">/update-server&quot;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true"></a><span class="ex">docker</span> run -d <span class="kw">\</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true"></a>    <span class="ex">-v</span> <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">/update-server&quot;</span>:/web <span class="kw">\</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true"></a>    <span class="ex">-p</span> 8080:8080 <span class="kw">\</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true"></a>    <span class="ex">halverneus</span>/static-file-server:<span class="ex">latest</span></span></code></pre></div>
 <p>or any other web server you want.</p>
 <h3 id="setting-up-a-bittorrent-tracker">Setting up a Bittorrent Tracker</h3>
 <p>Strictly speaking you don’t need to set up your own tracker, but I think you should. It’s easy and reliable to host one using the <code>zzzot</code> plugin on a Java I2P router. <code>zzzot</code> is hosted at <a href="http://stats.i2p">http://stats.i2p/</a> can be installed by pasting the URL below into the <strong><code>Installation from URL</code></strong> field on <a href="http://127.0.0.1:7657/configplugins">the Router Plugins page</a>:</p>

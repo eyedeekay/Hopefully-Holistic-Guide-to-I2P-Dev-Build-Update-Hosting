@@ -264,6 +264,7 @@ If you don't want to use that, any static file server with an I2P tunnel pointed
 it will do. For example, you can use this:
 
 ```sh
+# This is a suggestion for people who want to use docker, for instance
 mkdir -p "$HOME/update-server"
 cp ./i2pupdate.su3 "$HOME/update-server"
 docker run -d \
