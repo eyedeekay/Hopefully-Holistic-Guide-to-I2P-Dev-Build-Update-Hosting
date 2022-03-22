@@ -14,9 +14,8 @@ being a dev build that you host yourself or for a small audience of testers.
  a good idea)
 - `git` for obtaining software from the internet in source form
 
-If you're on Debian or Ubuntu linux, this will satisfy the dependencies:
-
 ```sh
+# If you're on Debian or Ubuntu linux, this will satisfy the dependencies:
 sudo apt-get install python \
     python-dev \
     python-virtualenv \
@@ -80,6 +79,7 @@ Using `virtualenv` is recommended for anyone who wants to build newsfeeds on the
 system.
 
 ```sh
+# This is the "official" way
 ./setup_venv.sh
 . env/bin/activate
 pip install .
@@ -91,7 +91,8 @@ pip install .
 `virtualenv`.
 
 ```sh
-You're done, actually. The container has all the dependencies managed automatically.
+# Docker handles things automatically by wrapping up the official steps in a container
+The container has all the dependencies managed automatically, you do not need to do anything.
 ```
 
 ##### If you want to use neither
@@ -102,6 +103,7 @@ stable way to do things and only recommended if you host your newsfeed in a dedi
 VM.
 
 ```sh
+# This is usually not a very good idea
 pip install .
 ```
 
@@ -298,4 +300,35 @@ this we'll need to generate a torrent of our router update using our open tracke
 generate a `releases.json` file describing where to find the torrent and the update
 packages, and write a news entry for your router update.
 
-TODO: it's late and I'm calling it for the night. Last few steps in the morning.
+1. Using the `.su3` package you generated in the "Signing your Update" step, generate
+a .torrent of your update and convert it to a magnet link. Every torrent generator I have
+tried is capable of generating an I2P torrent, they aren't substantially different from
+regular torrents for the most part. I often use `mktorrent` because most package managers
+have it and because it's pretty easy to automate.
+
+```sh
+# Using mktorrent
+mktorrent --announce="http://yourzzzotopentrackerhasabase32urlthatisprettylong.b32.i2p/a" \
+   --web-seed="http://yoursite.i2p/files/i2pupdate.su3" \
+   i2pupdate.su3
+```
+
+2. Load the file named `i2pupdate.su3.torrent` into I2PSnark without starting it. Copy the
+`i2pupdate.su3` file into the `i2psnark` directory, then start the torrent from the I2PSnark
+webUI. The torrent will appear as fully downloaded, and you will be ready to seed. As a last
+step, copy the "Magnet Link" for your `.su3.torrent` from the WebUI.
+
+```sh
+# Use this command if you're on Debian or Ubuntu a service
+sudo -u i2psvc cp ./i2pupdate.su3 /var/lib/i2p/i2p-config/i2psnark
+```
+
+```sh
+# Use this command if you're using a "User" install or the `.jar` package
+cp ./i2pupdate.su3 $HOME/.i2p/i2psnark
+```
+
+3. Next we need to create the `releases.json` file which will be used to generate part of our
+newsfeed that informs I2P routers that they need to update, and where to get those updates
+from. You will need to add this file to your `i2p.newsxml` checkout. A `releases.json` file
+contains:

@@ -15,12 +15,12 @@
 <li><code>virtualenv</code> or <code>docker</code> to isolate the feed generator dependencies(optional but a good idea)</li>
 <li><code>git</code> for obtaining software from the internet in source form</li>
 </ul>
-<p>If you’re on Debian or Ubuntu linux, this will satisfy the dependencies:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="fu">sudo</span> apt-get install python <span class="kw">\</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>    <span class="ex">python-dev</span> <span class="kw">\</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>    <span class="ex">python-virtualenv</span> <span class="kw">\</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>    <span class="ex">libxml2-dev</span> <span class="kw">\</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>    <span class="ex">libxslt1-dev</span></span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co"># If you&#39;re on Debian or Ubuntu linux, this will satisfy the dependencies:</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="fu">sudo</span> apt-get install python <span class="kw">\</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>    <span class="ex">python-dev</span> <span class="kw">\</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>    <span class="ex">python-virtualenv</span> <span class="kw">\</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>    <span class="ex">libxml2-dev</span> <span class="kw">\</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>    <span class="ex">libxslt1-dev</span></span></code></pre></div>
 <p>In other systems, you’ll need to determine the similar steps to install this software.</p>
 <h3 id="setting-up-your-signing-keys">Setting up your Signing Keys</h3>
 <p>In order to distribute updates, you should set up signing keys in order to authenticate the downloads. It’s also important in order to carry out the whole process, end-to-end, in order to understand how it all works. In order to generate your plugin signing keys, use the following steps:</p>
@@ -48,15 +48,18 @@
 </ol>
 <h5 id="if-you-want-to-use-virtualenv">If you want to use <code>virtualenv</code></h5>
 <p>Using <code>virtualenv</code> is recommended for anyone who wants to build newsfeeds on their system.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="ex">./setup_venv.sh</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="bu">.</span> <span class="ex">env/bin/activate</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="ex">pip</span> install .</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="co"># This is the &quot;official&quot; way</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="ex">./setup_venv.sh</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="bu">.</span> <span class="ex">env/bin/activate</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="ex">pip</span> install .</span></code></pre></div>
 <h5 id="if-you-want-to-use-docker">If you want to use <code>docker</code></h5>
 <p><code>docker</code> is also capable of isolating these dependencies and can be used instead of <code>virtualenv</code>.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="ex">You</span><span class="st">&#39;re done, actually. The container has all the dependencies managed automatically.</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="co"># Docker handles things automatically by wrapping up the official steps in a container</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="ex">The</span> container has all the dependencies managed automatically, you do not need to do anything.</span></code></pre></div>
 <h5 id="if-you-want-to-use-neither">If you want to use neither</h5>
 <p>As long as you aren’t using the <code>newsfeed</code> package from python anywhere else, you should also be able to just <code>pip install</code> the dependencies. This is the least stable way to do things and only recommended if you host your newsfeed in a dedicated VM.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="ex">pip</span> install .</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="co"># This is usually not a very good idea</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="ex">pip</span> install .</span></code></pre></div>
 <ol start="3" type="1">
 <li>After you’ve done that, you’re adequately configured to build news feeds. However, you still aren’t set up to serve the news feeds to people. Since we’re not ready to do that for real yet, to practice, let’s build the existing feeds, and copy them over to your web server.</li>
 </ol>
@@ -146,6 +149,22 @@
 <p>and clicking the <strong><code>Install plugin</code></strong> button.</p>
 <h3 id="self-publishing-your-update">Self-Publishing your update</h3>
 <p>Finally, now that you’ve got the news server, the news feed generator, the download server, and an updater published, you’re ready to create the last thing you need, your custom newsfeed. This will <strong>replace</strong> the example newsfeed we built earlier. To do this we’ll need to generate a torrent of our router update using our open tracker, generate a <code>releases.json</code> file describing where to find the torrent and the update packages, and write a news entry for your router update.</p>
-<p>TODO: it’s late and I’m calling it for the night. Last few steps in the morning.</p>
+<ol type="1">
+<li>Using the <code>.su3</code> package you generated in the “Signing your Update” step, generate a .torrent of your update and convert it to a magnet link. Every torrent generator I have tried is capable of generating an I2P torrent, they aren’t substantially different from regular torrents for the most part. I often use <code>mktorrent</code> because most package managers have it and because it’s pretty easy to automate.</li>
+</ol>
+<div class="sourceCode" id="cb23"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true"></a><span class="co"># Using mktorrent</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true"></a><span class="ex">mktorrent</span> --announce=<span class="st">&quot;http://yourzzzotopentrackerhasabase32urlthatisprettylong.b32.i2p/a&quot;</span> <span class="kw">\</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true"></a>   <span class="ex">--web-seed</span>=<span class="st">&quot;http://yoursite.i2p/files/i2pupdate.su3&quot;</span> <span class="kw">\</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true"></a>   <span class="ex">i2pupdate.su3</span></span></code></pre></div>
+<ol start="2" type="1">
+<li>Load the file named <code>i2pupdate.su3.torrent</code> into I2PSnark without starting it. Copy the <code>i2pupdate.su3</code> file into the <code>i2psnark</code> directory, then start the torrent from the I2PSnark webUI. The torrent will appear as fully downloaded, and you will be ready to seed. As a last step, copy the “Magnet Link” for your <code>.su3.torrent</code> from the WebUI.</li>
+</ol>
+<div class="sourceCode" id="cb24"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true"></a><span class="co"># Use this command if you&#39;re on Debian or Ubuntu a service</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true"></a><span class="fu">sudo</span> -u i2psvc cp ./i2pupdate.su3 /var/lib/i2p/i2p-config/i2psnark</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true"></a><span class="co"># Use this command if you&#39;re using a &quot;User&quot; install or the `.jar` package</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true"></a><span class="fu">cp</span> ./i2pupdate.su3 <span class="va">$HOME</span>/.i2p/i2psnark</span></code></pre></div>
+<ol start="3" type="1">
+<li>Next we need to create the <code>releases.json</code> file which will be used to generate part of our newsfeed that informs I2P routers that they need to update, and where to get those updates from. You will need to add this file to your <code>i2p.newsxml</code> checkout. A <code>releases.json</code> file contains:</li>
+</ol>
 </body>
 </html>
