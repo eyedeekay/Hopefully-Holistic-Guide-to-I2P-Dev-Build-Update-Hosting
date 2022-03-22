@@ -243,12 +243,39 @@ based updater, use:
 ### Setting up a Download Server
 
 Now you're able to notify your users that there is an update, but you need somewhere
-to host the actual download.
+to host the actual download. For the purposes of our tutorial, we'll assume you're
+using the I2P site included with the Java I2P router, but any web server will do. This
+will serve as a reliable backup distribution point for your I2P updates. Copy
+`i2pupdate.su3` to the document root.
+
+```sh
+# Use this command if you're on Debian or Ubuntu a service
+sudo -u i2psvc mkdir -p /var/lib/i2p/i2p-config/eepsite/docroot/files
+sudo -u i2psvc cp ./i2pupdate.su3 /var/lib/i2p/i2p-config/eepsite/docroot/files
+```
+
+```sh
+# Use this command if you're using a "User" install or the `.jar` package
+mkdir -p $HOME/.i2p/eepsite/docroot/files
+cp ./i2pupdate.su3 $HOME/.i2p/eepsite/docroot/files
+```
+
+If you don't want to use that, any static file server with an I2P tunnel pointed at
+it will do. For example, you can use this:
+
+```sh
+mkdir -p "$HOME/update-server"
+cp ./i2pupdate.su3 "$HOME/update-server"
+docker run -d \
+    -v "$HOME/update-server":/web \
+    -p 8080:8080 \
+    halverneus/static-file-server:latest
+```
 
 ### Setting up a Bittorrent Tracker
 
 Strictly speaking you don't need to set up your own tracker, but I think you should.
-It's easy and reliable.
+It's easy and reliable to host one using `zzzot`.
 
 ### Self-Publishing your update
 
