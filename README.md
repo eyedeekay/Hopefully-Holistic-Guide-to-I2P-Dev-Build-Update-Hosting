@@ -331,4 +331,29 @@ cp ./i2pupdate.su3 $HOME/.i2p/i2psnark
 3. Next we need to create the `releases.json` file which will be used to generate part of our
 newsfeed that informs I2P routers that they need to update, and where to get those updates
 from. You will need to add this file to your `i2p.newsxml` checkout. A `releases.json` file
-contains:
+contains: the date the torrent was created, the minimum version required to apply the automatic
+update, the version that I2P will be updated to, and the download locations. This is a recent
+example of an updates.json file:
+
+```json
+[
+  {
+    "date": "2022-02-21",
+    "version": "1.7.0",
+    "minVersion": "0.9.9",
+    "minJavaVersion": "1.8",
+    "updates": {
+      "su3": {
+        "torrent": "magnet:?xt=urn:btih:f49db26dd75f61d8d2b4a187bc3d61d71c6dee09&dn=i2pupdate-1.7.0.su3&tr=http://tracker2.postman.i2p/announce.php",
+        "url": [
+          "http://stats.i2p/i2p/1.7.0/i2pupdate.su3",
+          "http://mgp6yzdxeoqds3wucnbhfrdgpjjyqbiqjdwcfezpul3or7bzm4ga.b32.i2p/releases/1.7.0/i2pupdate.su3"
+        ]
+      }
+    }
+  }
+]
+```
+
+Note the `"torrent:"` field, where you should place the generated magnet link you copied from the I2PSnark
+Web UI, and the `"url"`

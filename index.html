@@ -164,7 +164,25 @@
 <div class="sourceCode" id="cb25"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true"></a><span class="co"># Use this command if you&#39;re using a &quot;User&quot; install or the `.jar` package</span></span>
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true"></a><span class="fu">cp</span> ./i2pupdate.su3 <span class="va">$HOME</span>/.i2p/i2psnark</span></code></pre></div>
 <ol start="3" type="1">
-<li>Next we need to create the <code>releases.json</code> file which will be used to generate part of our newsfeed that informs I2P routers that they need to update, and where to get those updates from. You will need to add this file to your <code>i2p.newsxml</code> checkout. A <code>releases.json</code> file contains:</li>
+<li>Next we need to create the <code>releases.json</code> file which will be used to generate part of our newsfeed that informs I2P routers that they need to update, and where to get those updates from. You will need to add this file to your <code>i2p.newsxml</code> checkout. A <code>releases.json</code> file contains: the date the torrent was created, the minimum version required to apply the automatic update, the version that I2P will be updated to, and the download locations. This is a recent example of an updates.json file:</li>
 </ol>
+<div class="sourceCode" id="cb26"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true"></a><span class="ot">[</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true"></a>  <span class="fu">{</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true"></a>    <span class="dt">&quot;date&quot;</span><span class="fu">:</span> <span class="st">&quot;2022-02-21&quot;</span><span class="fu">,</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true"></a>    <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;1.7.0&quot;</span><span class="fu">,</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true"></a>    <span class="dt">&quot;minVersion&quot;</span><span class="fu">:</span> <span class="st">&quot;0.9.9&quot;</span><span class="fu">,</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true"></a>    <span class="dt">&quot;minJavaVersion&quot;</span><span class="fu">:</span> <span class="st">&quot;1.8&quot;</span><span class="fu">,</span></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true"></a>    <span class="dt">&quot;updates&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true"></a>      <span class="dt">&quot;su3&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true"></a>        <span class="dt">&quot;torrent&quot;</span><span class="fu">:</span> <span class="st">&quot;magnet:?xt=urn:btih:f49db26dd75f61d8d2b4a187bc3d61d71c6dee09&amp;dn=i2pupdate-1.7.0.su3&amp;tr=http://tracker2.postman.i2p/announce.php&quot;</span><span class="fu">,</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true"></a>        <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true"></a>          <span class="st">&quot;http://stats.i2p/i2p/1.7.0/i2pupdate.su3&quot;</span><span class="ot">,</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true"></a>          <span class="st">&quot;http://mgp6yzdxeoqds3wucnbhfrdgpjjyqbiqjdwcfezpul3or7bzm4ga.b32.i2p/releases/1.7.0/i2pupdate.su3&quot;</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true"></a>        <span class="ot">]</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true"></a>      <span class="fu">}</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true"></a>    <span class="fu">}</span></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true"></a>  <span class="fu">}</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true"></a><span class="ot">]</span></span></code></pre></div>
+<p>Note the <code>"torrent:"</code> field, where you should place the generated magnet link you copied from the I2PSnark Web UI, and the <code>"url"</code></p>
 </body>
 </html>
