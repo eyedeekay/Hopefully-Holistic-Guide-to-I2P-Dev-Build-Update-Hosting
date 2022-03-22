@@ -333,7 +333,7 @@ newsfeed that informs I2P routers that they need to update, and where to get tho
 from. You will need to add this file to your `i2p.newsxml` checkout. A `releases.json` file
 contains: the date the torrent was created, the minimum version required to apply the automatic
 update, the version that I2P will be updated to, and the download locations. This is a recent
-example of an updates.json file:
+example of an `releases.json` file:
 
 ```json
 [
@@ -355,5 +355,30 @@ example of an updates.json file:
 ]
 ```
 
-Note the `"torrent:"` field, where you should place the generated magnet link you copied from the I2PSnark
-Web UI, and the `"url"`
+Note the `"torrent:"` field, where you should place the generated magnet link you copied from
+the I2PSnark Web UI, and the `"url:"` field, where you should place the download links to your
+`.su3` files. When you're done editing your `releases.json` file, copy it to the `./data` directory
+corresponding to it's `os`/`branch` in `i2p.newsxml`.
+
+4. Now you should create a news entry for your update. Change directory to your `i2p.newsxml`
+checkout, run the command:
+
+```sh
+./create_new_entry.sh
+```
+
+to automatically start editing a new entry in your custom newsfeed. If you're building for a
+specific OS or branch, then set them in the `I2P_OS` and `I2P_BRANCH` environment variables.
+Check the code comments or the example below for more custom environment arguments.
+
+```sh
+# This is an example of what I would run
+TITLE="Update for Windows Jpackage 1.7.0" AUTHOR=idk EDITOR=mousepad I2P_OS=win I2P_BRANCH=beta ./create_new_entry.sh
+```
+
+Once you have finished editing, your newsfeed is ready to generate and sign.
+
+5. Now you're ready to build the newsfeed which you will finally be able to use. Return
+to the step called "Signing your Update" and repeat those steps with your new feeds. Copy
+them over to your news server. Your updates are now ready to distribute. Keep an eye on your
+torrent client while the peers go up.
