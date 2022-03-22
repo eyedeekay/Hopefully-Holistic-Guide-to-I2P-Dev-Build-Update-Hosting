@@ -138,9 +138,13 @@
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true"></a>    <span class="ex">-v</span> <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">/update-server&quot;</span>:/web <span class="kw">\</span></span>
 <span id="cb21-5"><a href="#cb21-5" aria-hidden="true"></a>    <span class="ex">-p</span> 8080:8080 <span class="kw">\</span></span>
 <span id="cb21-6"><a href="#cb21-6" aria-hidden="true"></a>    <span class="ex">halverneus</span>/static-file-server:<span class="ex">latest</span></span></code></pre></div>
+<p>or any other web server you want.</p>
 <h3 id="setting-up-a-bittorrent-tracker">Setting up a Bittorrent Tracker</h3>
-<p>Strictly speaking you don’t need to set up your own tracker, but I think you should. It’s easy and reliable to host one using <code>zzzot</code>.</p>
+<p>Strictly speaking you don’t need to set up your own tracker, but I think you should. It’s easy and reliable to host one using the <code>zzzot</code> plugin on a Java I2P router. <code>zzzot</code> is hosted at <a href="http://stats.i2p">http://stats.i2p/</a> can be installed by pasting the URL below into the <strong><code>Installation from URL</code></strong> field on <a href="http://127.0.0.1:7657/configplugins">the Router Plugins page</a>:</p>
+<pre><code>http://stats.i2p/i2p/plugins/zzzot.su3</code></pre>
+<p>and clicking the <strong><code>Install plugin</code></strong> button.</p>
 <h3 id="self-publishing-your-update">Self-Publishing your update</h3>
-<p>Finally, now that you’ve got the news server, the news feeds, the download server, and an updater.</p>
+<p>Finally, now that you’ve got the news server, the news feed generator, the download server, and an updater published, you’re ready to create the last thing you need, your custom newsfeed. This will <strong>replace</strong> the example newsfeed we built earlier. To do this we’ll need to generate a torrent of our router update using our open tracker, generate a <code>releases.json</code> file describing where to find the torrent and the update packages, and write a news entry for your router update.</p>
+<p>TODO: it’s late and I’m calling it for the night. Last few steps in the morning.</p>
 </body>
 </html>

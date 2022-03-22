@@ -272,12 +272,29 @@ docker run -d \
     halverneus/static-file-server:latest
 ```
 
+or any other web server you want.
+
 ### Setting up a Bittorrent Tracker
 
 Strictly speaking you don't need to set up your own tracker, but I think you should.
-It's easy and reliable to host one using `zzzot`.
+It's easy and reliable to host one using the `zzzot` plugin on a Java I2P router.
+```zzzot``` is hosted at [http://stats.i2p/](http://stats.i2p) can be installed by
+pasting the URL below into the **`Installation from URL`** field on
+[the Router Plugins page](http://127.0.0.1:7657/configplugins):
+
+```
+http://stats.i2p/i2p/plugins/zzzot.su3
+```
+
+and clicking the **`Install plugin`** button.
 
 ### Self-Publishing your update
 
-Finally, now that you've got the news server, the news feeds, the download server, and
-an updater.
+Finally, now that you've got the news server, the news feed generator, the download
+server, and an updater published, you're ready to create the last thing you need, your
+custom newsfeed. This will **replace** the example newsfeed we built earlier. To do
+this we'll need to generate a torrent of our router update using our open tracker,
+generate a `releases.json` file describing where to find the torrent and the update
+packages, and write a news entry for your router update.
+
+TODO: it's late and I'm calling it for the night. Last few steps in the morning.
