@@ -1,199 +1,804 @@
-<DOCTYPE html>
 <html>
-<head>
-  <title>Hopefully Holistic Guide to I2P Dev Build Update Hosting</title>
-  <link rel=stylesheet type=text/css href =style.css />
-</head>
-<body>
-<h1>Hopefully Holistic Guide to I2P Dev Build Update Hosting</h1>
-<h1 id="hopefully-holistic-guide-to-i2p-dev-build-update-hosting">Hopefully Holistic Guide to I2P Dev Build Update Hosting</h1>
-<p>The process of setting up an I2P update server, complete with I2P torrents for updates, is surprisingly straightforward, but there isn’t really a document where every step is laid out from end-to-end. Having done it a couple times, I suppose I’m the apt person to write such a document, with the proposed target being a dev build that you host yourself or for a small audience of testers.</p>
-<h2 id="what-you-need-to-get-started">What you need to get started</h2>
-<ul>
-<li>An I2P router installed on your system.</li>
-<li><code>python3</code>, <code>pip3</code> and <code>bash</code> for generating the news feeds</li>
-<li><code>virtualenv</code> or <code>docker</code> to isolate the feed generator dependencies(optional but a good idea)</li>
-<li><code>git</code> for obtaining software from the internet in source form</li>
-</ul>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co"># If you&#39;re on Debian or Ubuntu linux, this will satisfy the dependencies:</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="fu">sudo</span> apt-get install python <span class="kw">\</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>    <span class="ex">python-dev</span> <span class="kw">\</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>    <span class="ex">python-virtualenv</span> <span class="kw">\</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>    <span class="ex">libxml2-dev</span> <span class="kw">\</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>    <span class="ex">libxslt1-dev</span></span></code></pre></div>
-<p>In other systems, you’ll need to determine the similar steps to install this software.</p>
-<h3 id="setting-up-your-signing-keys">Setting up your Signing Keys</h3>
-<p>In order to distribute updates, you should set up signing keys in order to authenticate the downloads. It’s also important in order to carry out the whole process, end-to-end, in order to understand how it all works. In order to generate your plugin signing keys, use the following steps:</p>
-<ol type="1">
-<li>Download the helper script. This wraps around some of the key generation options to make them easier to use. The helper script is available <a href="https://raw.githubusercontent.com/eyedeekay/Generate-Plugin-Signing-Keys/master/i2pk">at this link</a> and can be viewed <a href="https://github.com/eyedeekay/Generate-Plugin-Signing-Keys/">on my github</a>.</li>
-<li>Generate your newsfeed signing keys by running the following command from the directory where you downloaded <code>i2pk</code>.</li>
-</ol>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="ex">./i2pk</span> -p <span class="va">$HOME</span>/.i2p-plugin-keys <span class="kw">\</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>    <span class="ex">-s</span> you@mail.i2p <span class="kw">\</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>    <span class="ex">-t</span> RSA_SHA512_4096 <span class="kw">\</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>    <span class="ex">-n</span> newssigner <span class="kw">\</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>    <span class="ex">-c</span> router generate_keys</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a><span class="fu">cp</span> ~/i2p/certificates/router/you_at_mail.i2p ~/i2p/certificates/news/you_at_mail.i2p</span></code></pre></div>
-<p>And you’re all done. Your new signing keys are ready to use for both <code>news</code> and <code>router</code> updates on your own system. These updates will not work for people who do not choose to trust your keys.</p>
-<h3 id="setting-up-a-news-server">Setting up a News Server</h3>
-<p>Next, you’ll need to set up a News Server. In I2P, a News Server is a hidden server which serves up XML files in signed, zipped bundles. You sign these bundles with the keys we generated in the previous step.</p>
-<h4 id="docker-and-virtualenv"><code>docker</code> and <code>virtualenv</code></h4>
-<p>It is highly recommended that you isolate the python dependencies you need using either <code>docker</code> or <code>virtualenv</code>, depending on your preference.</p>
-<ol type="1">
-<li>To get started, clone the news server software.</li>
-</ol>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="fu">git</span> clone https://github.com/i2p/i2p.newsxml</span></code></pre></div>
-<ol start="2" type="1">
-<li>Next, you’ll need to set up the news server software. If you got all the dependencies from “What you need to get started” you should be able to run the following commands:</li>
-</ol>
-<h5 id="if-you-want-to-use-virtualenv">If you want to use <code>virtualenv</code></h5>
-<p>Using <code>virtualenv</code> is recommended for anyone who wants to build newsfeeds on their system.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="co"># This is the &quot;official&quot; way</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a><span class="ex">./setup_venv.sh</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="bu">.</span> <span class="ex">env/bin/activate</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="ex">pip</span> install .</span></code></pre></div>
-<h5 id="if-you-want-to-use-docker">If you want to use <code>docker</code></h5>
-<p><code>docker</code> is also capable of isolating these dependencies and can be used instead of <code>virtualenv</code>.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="co"># Docker handles things automatically by wrapping up the official steps in a container</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="ex">The</span> container has all the dependencies managed automatically, you do not need to do anything.</span></code></pre></div>
-<h5 id="if-you-want-to-use-neither">If you want to use neither</h5>
-<p>As long as you aren’t using the <code>newsfeed</code> package from python anywhere else, you should also be able to just <code>pip install</code> the dependencies. This is the least stable way to do things and only recommended if you host your newsfeed in a dedicated VM.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a><span class="co"># This is usually not a very good idea</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a><span class="ex">pip</span> install .</span></code></pre></div>
-<ol start="3" type="1">
-<li>After you’ve done that, you’re adequately configured to build news feeds. However, you still aren’t set up to serve the news feeds to people. Since we’re not ready to do that for real yet, to practice, let’s build the existing feeds, and copy them over to your web server.</li>
-</ol>
-<h4 id="configuring-the-newsfeed-generator">Configuring the newsfeed generator</h4>
-<p>The newsfeed generator can use a configuration file, called <code>etc/su3.vars.custom</code>, which you should edit.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="co"># Install dir</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a><span class="va">I2P=</span>/home/you/i2p</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a><span class="co"># private key keystore</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a><span class="va">KS=</span>/home/you/.i2p-plugin-keys/newssigner-su3-keystore.ks</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a><span class="co"># signer</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a><span class="va">SIGNER=</span>you<span class="ex">@mail.i2p</span></span></code></pre></div>
-<p>If you’re using <code>docker</code>, you should use <code>etc/su3.vars.custom.docker</code> instead, and omit the <code>$HOME</code> directory from the config lines.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="co"># Install dir</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a><span class="va">I2P=</span>/i2p</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a><span class="co"># private key keystore</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a><span class="va">KS=</span>/.i2p-plugin-keys/newssigner-su3-keystore.ks</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a><span class="co"># signer</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a><span class="va">SIGNER=</span>you<span class="ex">@mail.i2p</span></span></code></pre></div>
-<h5 id="if-you-used-pip-or-virtualenv-in-the-last-step">If you used <code>pip</code> or <code>virtualenv</code> in the last step</h5>
-<p>If you used <code>pip</code> or <code>virtualenv</code> to set up your feed generator, then you need to generate the feeds and <code>.su3</code> bundles first, then manually copy them to the web server you want to use. In this case we’re going to assume the one that comes with I2P, but basically any web server will works. The first step will generate the <code>./build</code> directory and all the files that you need to serve. After it runs, take a moment to examine the contents of <code>./build</code>. After the second command runs, the feeds can be previewed at <code>http://localhost:7658</code>.</p>
-<ol type="1">
-<li>Start by building the feeds. Make sure you’re in your <code>virtualenv</code> if you’re using it, and run the command:</li>
-</ol>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="ex">./new.sh</span></span></code></pre></div>
-<ol start="2" type="1">
-<li>If you used <code>pip</code> or <code>virtualenv</code> then we will also be using the web server that is built into I2P. When this step is complete, the feeds can be previewed at <code>http://localhost:7658</code>.</li>
-</ol>
-<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="co"># Use this command if you&#39;re on Debian or Ubuntu a service</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a><span class="fu">sudo</span> -u i2psvc cp -r ./build /var/lib/i2p/i2p-config/eepsite/docroot/news</span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="co"># Use this command if you&#39;re using a &quot;User&quot; install or the `.jar` package</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a><span class="fu">cp</span> -r ./build <span class="va">$HOME</span>/.i2p/eepsite/docroot/news</span></code></pre></div>
-<h5 id="if-you-used-docker-in-the-last-step">If you used <code>docker</code> in the last step</h5>
-<p>All you need to do is the following two commands. The first one will generate the <code>./build</code> directory and all the files that you need to serve. After it runs, take a moment to examine the contents of <code>./build</code>. The second command takes the build directory and places it in the document root of a light web server, which will serve the built feeds on <code>http://localhost:3000</code>.</p>
-<ol type="1">
-<li>The first command generates the feeds and turns them into signed bundles. This will prompt you for a password.</li>
-</ol>
-<div class="sourceCode" id="cb12"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="ex">./docker-news.sh</span></span></code></pre></div>
-<ol start="2" type="1">
-<li>The second command runs the web server and serves the feeds on <code>localhost:3000</code></li>
-</ol>
-<div class="sourceCode" id="cb13"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a><span class="ex">./docker-newsxml.sh</span></span></code></pre></div>
-<p>Now you’re ready to host your news feeds.</p>
-<h3 id="signing-your-update">Signing your Update</h3>
-<p>Now you’re prepared to build and sign newsfeeds, however, you still need to build and sign the updates themselves. How you build the updates is going to depend on how you build your app, but for the first example we’re going to assume you’re building an I2P router from the <code>i2p.i2p</code> source. In <code>i2p.i2p</code> there is an <code>ant</code> target that runs the signing command, you can use it with:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="ex">ant</span> signed-updater200</span></code></pre></div>
-<ol type="1">
-<li>When you run this command, you’ll be prompted to enter your signing key details. When you see:</li>
-</ol>
-<pre class="make"><code>-sign-update:
-    [input] Enter su3 private signing key store:</code></pre>
-<ol start="2" type="1">
-<li>When you see:</li>
-</ol>
-<pre class="make"><code>[input] Enter su3 key name (you@mail.i2p):</code></pre>
-<ol start="3" type="1">
-<li>Finally, when you see:</li>
-</ol>
-<pre class="make"><code>[input] Enter su3 key password for you@mail.i2p:</code></pre>
-<p>Enter the password for your keystore. You will end up with a signed update file named <code>i2pupdate.su3</code> in your directory. That is your signed update file, which you will place in your update server in the next step.</p>
-<p>There are different kinds of I2P updates now, registered via the <code>UpdatePostProcessor</code> system. You can, for example, make an “Executable” <code>UpdatePostProcessor</code> or a “DMG” <code>UpdatePostProcessor</code> instead. When you generate an <code>.su3</code> for such a file, you may once again use <code>i2pk</code> to make the process easier. For example, to build an Executable based updater, use:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true"></a><span class="ex">./i2pk</span> -p <span class="va">$HOME</span>/.i2p-plugin-keys <span class="kw">\</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true"></a>    <span class="ex">-s</span> you@mail.i2p <span class="kw">\</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true"></a>    <span class="ex">-t</span> RSA_SHA512_4096 <span class="kw">\</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true"></a>    <span class="ex">-n</span> newssigner <span class="kw">\</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true"></a>    <span class="ex">-f</span> EXE <span class="kw">\</span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true"></a>    <span class="ex">-c</span> router sign i2pupdate.exe</span></code></pre></div>
-<h3 id="setting-up-a-download-server">Setting up a Download Server</h3>
-<p>Now you’re able to notify your users that there is an update, but you need somewhere to host the actual download. For the purposes of our tutorial, we’ll assume you’re using the I2P site included with the Java I2P router, but any web server will do. This will serve as a reliable backup distribution point for your I2P updates. Copy <code>i2pupdate.su3</code> to the document root.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true"></a><span class="co"># Use this command if you&#39;re on Debian or Ubuntu a service</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true"></a><span class="fu">sudo</span> -u i2psvc mkdir -p /var/lib/i2p/i2p-config/eepsite/docroot/files</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true"></a><span class="fu">sudo</span> -u i2psvc cp ./i2pupdate.su3 /var/lib/i2p/i2p-config/eepsite/docroot/files</span></code></pre></div>
-<div class="sourceCode" id="cb20"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true"></a><span class="co"># Use this command if you&#39;re using a &quot;User&quot; install or the `.jar` package</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true"></a><span class="fu">mkdir</span> -p <span class="va">$HOME</span>/.i2p/eepsite/docroot/files</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true"></a><span class="fu">cp</span> ./i2pupdate.su3 <span class="va">$HOME</span>/.i2p/eepsite/docroot/files</span></code></pre></div>
-<p>If you don’t want to use that, any static file server with an I2P tunnel pointed at it will do. For example, you can use this:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a><span class="co"># This is a suggestion for people who want to use docker, for instance</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true"></a><span class="fu">mkdir</span> -p <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">/update-server&quot;</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true"></a><span class="fu">cp</span> ./i2pupdate.su3 <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">/update-server&quot;</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true"></a><span class="ex">docker</span> run -d <span class="kw">\</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true"></a>    <span class="ex">-v</span> <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">/update-server&quot;</span>:/web <span class="kw">\</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true"></a>    <span class="ex">-p</span> 8080:8080 <span class="kw">\</span></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true"></a>    <span class="ex">halverneus</span>/static-file-server:<span class="ex">latest</span></span></code></pre></div>
-<p>or any other web server you want.</p>
-<h3 id="setting-up-a-bittorrent-tracker">Setting up a Bittorrent Tracker</h3>
-<p>Strictly speaking you don’t need to set up your own tracker, but I think you should. It’s easy and reliable to host one using the <code>zzzot</code> plugin on a Java I2P router. <code>zzzot</code> is hosted at <a href="http://stats.i2p">http://stats.i2p/</a> can be installed by pasting the URL below into the <strong><code>Installation from URL</code></strong> field on <a href="http://127.0.0.1:7657/configplugins">the Router Plugins page</a>:</p>
-<pre><code>http://stats.i2p/i2p/plugins/zzzot.su3</code></pre>
-<p>and clicking the <strong><code>Install plugin</code></strong> button.</p>
-<h3 id="self-publishing-your-update">Self-Publishing your update</h3>
-<p>Finally, now that you’ve got the news server, the news feed generator, the download server, and an updater published, you’re ready to create the last thing you need, your custom newsfeed. This will <strong>replace</strong> the example newsfeed we built earlier. To do this we’ll need to generate a torrent of our router update using our open tracker, generate a <code>releases.json</code> file describing where to find the torrent and the update packages, and write a news entry for your router update.</p>
-<ol type="1">
-<li>Using the <code>.su3</code> package you generated in the “Signing your Update” step, generate a .torrent of your update and convert it to a magnet link. Every torrent generator I have tried is capable of generating an I2P torrent, they aren’t substantially different from regular torrents for the most part. I often use <code>mktorrent</code> because most package managers have it and because it’s pretty easy to automate.</li>
-</ol>
-<div class="sourceCode" id="cb23"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true"></a><span class="co"># Using mktorrent</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true"></a><span class="ex">mktorrent</span> --announce=<span class="st">&quot;http://yourzzzotopentrackerhasabase32urlthatisprettylong.b32.i2p/a&quot;</span> <span class="kw">\</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true"></a>   <span class="ex">--web-seed</span>=<span class="st">&quot;http://yoursite.i2p/files/i2pupdate.su3&quot;</span> <span class="kw">\</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true"></a>   <span class="ex">i2pupdate.su3</span></span></code></pre></div>
-<ol start="2" type="1">
-<li>Load the file named <code>i2pupdate.su3.torrent</code> into I2PSnark without starting it. Copy the <code>i2pupdate.su3</code> file into the <code>i2psnark</code> directory, then start the torrent from the I2PSnark webUI. The torrent will appear as fully downloaded, and you will be ready to seed. As a last step, copy the “Magnet Link” for your <code>.su3.torrent</code> from the WebUI.</li>
-</ol>
-<div class="sourceCode" id="cb24"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true"></a><span class="co"># Use this command if you&#39;re on Debian or Ubuntu a service</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true"></a><span class="fu">sudo</span> -u i2psvc cp ./i2pupdate.su3 /var/lib/i2p/i2p-config/i2psnark</span></code></pre></div>
-<div class="sourceCode" id="cb25"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true"></a><span class="co"># Use this command if you&#39;re using a &quot;User&quot; install or the `.jar` package</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true"></a><span class="fu">cp</span> ./i2pupdate.su3 <span class="va">$HOME</span>/.i2p/i2psnark</span></code></pre></div>
-<ol start="3" type="1">
-<li>Next we need to create the <code>releases.json</code> file which will be used to generate part of our newsfeed that informs I2P routers that they need to update, and where to get those updates from. You will need to add this file to your <code>i2p.newsxml</code> checkout. A <code>releases.json</code> file contains: the date the torrent was created, the minimum version required to apply the automatic update, the version that I2P will be updated to, and the download locations. This is a recent example of an <code>releases.json</code> file:</li>
-</ol>
-<div class="sourceCode" id="cb26"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true"></a><span class="ot">[</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true"></a>  <span class="fu">{</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true"></a>    <span class="dt">&quot;date&quot;</span><span class="fu">:</span> <span class="st">&quot;2022-02-21&quot;</span><span class="fu">,</span></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true"></a>    <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;1.7.0&quot;</span><span class="fu">,</span></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true"></a>    <span class="dt">&quot;minVersion&quot;</span><span class="fu">:</span> <span class="st">&quot;0.9.9&quot;</span><span class="fu">,</span></span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true"></a>    <span class="dt">&quot;minJavaVersion&quot;</span><span class="fu">:</span> <span class="st">&quot;1.8&quot;</span><span class="fu">,</span></span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true"></a>    <span class="dt">&quot;updates&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true"></a>      <span class="dt">&quot;su3&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true"></a>        <span class="dt">&quot;torrent&quot;</span><span class="fu">:</span> <span class="st">&quot;magnet:?xt=urn:btih:f49db26dd75f61d8d2b4a187bc3d61d71c6dee09&amp;dn=i2pupdate-1.7.0.su3&amp;tr=http://tracker2.postman.i2p/announce.php&quot;</span><span class="fu">,</span></span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true"></a>        <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
-<span id="cb26-11"><a href="#cb26-11" aria-hidden="true"></a>          <span class="st">&quot;http://stats.i2p/i2p/1.7.0/i2pupdate.su3&quot;</span><span class="ot">,</span></span>
-<span id="cb26-12"><a href="#cb26-12" aria-hidden="true"></a>          <span class="st">&quot;http://mgp6yzdxeoqds3wucnbhfrdgpjjyqbiqjdwcfezpul3or7bzm4ga.b32.i2p/releases/1.7.0/i2pupdate.su3&quot;</span></span>
-<span id="cb26-13"><a href="#cb26-13" aria-hidden="true"></a>        <span class="ot">]</span></span>
-<span id="cb26-14"><a href="#cb26-14" aria-hidden="true"></a>      <span class="fu">}</span></span>
-<span id="cb26-15"><a href="#cb26-15" aria-hidden="true"></a>    <span class="fu">}</span></span>
-<span id="cb26-16"><a href="#cb26-16" aria-hidden="true"></a>  <span class="fu">}</span></span>
-<span id="cb26-17"><a href="#cb26-17" aria-hidden="true"></a><span class="ot">]</span></span></code></pre></div>
-<p>Note the <code>"torrent:"</code> field, where you should place the generated magnet link you copied from the I2PSnark Web UI, and the <code>"url:"</code> field, where you should place the download links to your <code>.su3</code> files. When you’re done editing your <code>releases.json</code> file, copy it to the <code>./data</code> directory corresponding to it’s <code>os</code>/<code>branch</code> in <code>i2p.newsxml</code>.</p>
-<ol start="4" type="1">
-<li>Now you should create a news entry for your update. Change directory to your <code>i2p.newsxml</code> checkout, run the command:</li>
-</ol>
-<div class="sourceCode" id="cb27"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true"></a><span class="ex">./create_new_entry.sh</span></span></code></pre></div>
-<p>to automatically start editing a new entry in your custom newsfeed. If you’re building for a specific OS or branch, then set them in the <code>I2P_OS</code> and <code>I2P_BRANCH</code> environment variables. Check the code comments or the example below for more custom environment arguments.</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true"></a><span class="co"># This is an example of what I would run</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true"></a><span class="va">TITLE=</span><span class="st">&quot;Update for Windows Jpackage 1.7.0&quot;</span> <span class="va">AUTHOR=</span>idk <span class="va">EDITOR=</span>mousepad <span class="va">I2P_OS=</span>win <span class="va">I2P_BRANCH=</span>beta <span class="ex">./create_new_entry.sh</span></span></code></pre></div>
-<p>Once you have finished editing, your newsfeed is ready to generate and sign.</p>
-<ol start="5" type="1">
-<li>Now you’re ready to build the newsfeed which you will finally be able to use. Return to the step called “Signing your Update” and repeat those steps with your new feeds. Copy them over to your news server. Your updates are now ready to distribute. Keep an eye on your torrent client while the peers go up.</li>
-</ol>
-</body>
+  <head>
+    <title>
+      Hopefully Holist...
+    </title>
+    <meta name="author" content="eyedeekay" />
+    <meta name="description" content="Hopefully-Holistic-Guide-to-I2P-Dev-Build-Update-Hosting" />
+    <meta name="keywords" content="main" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="stylesheet" type="text/css" href="showhider.css" />
+  </head>
+  <body>
+    <div id="navbar">
+      <a href="#shownav">
+        Show navigation
+      </a>
+      <div id="shownav">
+        <div id="hidenav">
+          <ul>
+            <li>
+              <a href="..">
+                Up one level ^
+              </a>
+            </li>
+            <li>
+              <a href="index.html">
+                index
+              </a>
+            </li>
+            <li>
+              <a href="index.html">
+                index.html
+              </a>
+            </li>
+          </ul>
+          <br>
+          <a href="#hidenav">
+            Hide Navigation
+          </a>
+        </div>
+      </div>
+    </div>
+    <a id="returnhome" href="/">
+      /
+    </a>
+    <h1>
+      Hopefully Holistic Guide to I2P Dev Build Update Hosting
+    </h1>
+    <p>
+      The process of setting up an I2P update server, complete with I2P torrents
+      for updates, is surprisingly straightforward, but there isn&rsquo;t really a document
+      where every step is laid out from end-to-end. Having done it a couple times, I
+      suppose I&rsquo;m the apt person to write such a document, with the proposed target
+      being a dev build that you host yourself or for a small audience of testers.
+    </p>
+    <h2>
+      What you need to get started
+    </h2>
+    <ul>
+      <li>
+        An I2P router installed on your system.
+      </li>
+      <li>
+        <code>
+          python3
+        </code>
+        ,
+        <code>
+          pip3
+        </code>
+        and
+        <code>
+          bash
+        </code>
+        for generating the news feeds
+      </li>
+      <li>
+        <code>
+          virtualenv
+        </code>
+        or
+        <code>
+          docker
+        </code>
+        to isolate the feed generator dependencies(optional but
+        a good idea)
+      </li>
+      <li>
+        <code>
+          git
+        </code>
+        for obtaining software from the internet in source form
+      </li>
+    </ul>
+    <pre><code class="language-sh"># If you're on Debian or Ubuntu linux, this will satisfy the dependencies:
+sudo apt-get install python \
+    python-dev \
+    python-virtualenv \
+    libxml2-dev \
+    libxslt1-dev
+</code></pre>
+    <p>
+      In other systems, you&rsquo;ll need to determine the similar steps to install this
+      software.
+    </p>
+    <h3>
+      Setting up your Signing Keys
+    </h3>
+    <p>
+      In order to distribute updates, you should set up signing keys in order to
+      authenticate the downloads. It&rsquo;s also important in order to carry out the whole
+      process, end-to-end, in order to understand how it all works. In order to
+      generate your plugin signing keys, use the following steps:
+    </p>
+    <ol>
+      <li>
+        Download the helper script. This wraps around some of the key generation
+        options to make them easier to use. The helper script is available
+        <a href="https://raw.githubusercontent.com/eyedeekay/Generate-Plugin-Signing-Keys/master/i2pk">
+          at this link
+        </a>
+        and can be viewed
+        <a href="https://github.com/eyedeekay/Generate-Plugin-Signing-Keys/">
+          on my github
+        </a>
+        .
+      </li>
+      <li>
+        Generate your newsfeed signing keys by running the following command from the directory where
+        you downloaded
+        <code>
+          i2pk
+        </code>
+        .
+      </li>
+    </ol>
+    <pre><code class="language-sh">./i2pk -p $HOME/.i2p-plugin-keys \
+    -s you@mail.i2p \
+    -t RSA_SHA512_4096 \
+    -n newssigner \
+    -c router generate_keys
+cp ~/i2p/certificates/router/you_at_mail.i2p ~/i2p/certificates/news/you_at_mail.i2p
+</code></pre>
+    <p>
+      And you&rsquo;re all done. Your new signing keys are ready to use for both
+      <code>
+        news
+      </code>
+      and
+      <code>
+        router
+      </code>
+      updates on your own system. These updates will not work for people who do not choose to
+      trust your keys.
+    </p>
+    <h3>
+      Setting up a News Server
+    </h3>
+    <p>
+      Next, you&rsquo;ll need to set up a News Server. In I2P, a News Server is a hidden server which
+      serves up XML files in signed, zipped bundles. You sign these bundles with the keys we
+      generated in the previous step.
+    </p>
+    <h4>
+      <code>
+        docker
+      </code>
+      and
+      <code>
+        virtualenv
+      </code>
+    </h4>
+    <p>
+      It is highly recommended that you isolate the python dependencies you need using either
+      <code>
+        docker
+      </code>
+      or
+      <code>
+        virtualenv
+      </code>
+      , depending on your preference.
+    </p>
+    <ol>
+      <li>
+        To get started, clone the news server software.
+      </li>
+    </ol>
+    <pre><code class="language-sh">git clone https://github.com/i2p/i2p.newsxml
+</code></pre>
+    <ol>
+      <li>
+        Next, you&rsquo;ll need to set up the news server software. If you got all the dependencies
+        from &ldquo;What you need to get started&rdquo; you should be able to run the following commands:
+      </li>
+    </ol>
+    <h5>
+      If you want to use
+      <code>
+        virtualenv
+      </code>
+    </h5>
+    <p>
+      Using
+      <code>
+        virtualenv
+      </code>
+      is recommended for anyone who wants to build newsfeeds on their
+      system.
+    </p>
+    <pre><code class="language-sh"># This is the &quot;official&quot; way
+./setup_venv.sh
+. env/bin/activate
+pip install .
+</code></pre>
+    <h5>
+      If you want to use
+      <code>
+        docker
+      </code>
+    </h5>
+    <p>
+      <code>
+        docker
+      </code>
+      is also capable of isolating these dependencies and can be used instead of
+      <code>
+        virtualenv
+      </code>
+      .
+    </p>
+    <pre><code class="language-sh"># Docker handles things automatically by wrapping up the official steps in a container
+The container has all the dependencies managed automatically, you do not need to do anything.
+</code></pre>
+    <h5>
+      If you want to use neither
+    </h5>
+    <p>
+      As long as you aren&rsquo;t using the
+      <code>
+        newsfeed
+      </code>
+      package from python anywhere else,
+      you should also be able to just
+      <code>
+        pip install
+      </code>
+      the dependencies. This is the least
+      stable way to do things and only recommended if you host your newsfeed in a dedicated
+      VM.
+    </p>
+    <pre><code class="language-sh"># This is usually not a very good idea
+pip install .
+</code></pre>
+    <ol>
+      <li>
+        After you&rsquo;ve done that, you&rsquo;re adequately configured to build news feeds. However,
+        you still aren&rsquo;t set up to serve the news feeds to people. Since we&rsquo;re not ready to
+        do that for real yet, to practice, let&rsquo;s build the existing feeds, and copy them over
+        to your web server.
+      </li>
+    </ol>
+    <h4>
+      Configuring the newsfeed generator
+    </h4>
+    <p>
+      The newsfeed generator can use a configuration file, called
+      <code>
+        etc/su3.vars.custom
+      </code>
+      , which
+      you should edit.
+    </p>
+    <pre><code class="language-sh"># Install dir
+I2P=/home/you/i2p
+# private key keystore
+KS=/home/you/.i2p-plugin-keys/newssigner-su3-keystore.ks
+# signer
+SIGNER=you@mail.i2p
+</code></pre>
+    <p>
+      If you&rsquo;re using
+      <code>
+        docker
+      </code>
+      , you should use
+      <code>
+        etc/su3.vars.custom.docker
+      </code>
+      instead, and omit
+      the
+      <code>
+        $HOME
+      </code>
+      directory from the config lines.
+    </p>
+    <pre><code class="language-sh"># Install dir
+I2P=/i2p
+# private key keystore
+KS=/.i2p-plugin-keys/newssigner-su3-keystore.ks
+# signer
+SIGNER=you@mail.i2p
+</code></pre>
+    <h5>
+      If you used
+      <code>
+        pip
+      </code>
+      or
+      <code>
+        virtualenv
+      </code>
+      in the last step
+    </h5>
+    <p>
+      If you used
+      <code>
+        pip
+      </code>
+      or
+      <code>
+        virtualenv
+      </code>
+      to set up your feed generator, then you need to
+      generate the feeds and
+      <code>
+        .su3
+      </code>
+      bundles first, then manually copy them to the web server
+      you want to use. In this case we&rsquo;re going to assume the one that comes with I2P, but
+      basically any web server will works. The first step will generate the
+      <code>
+        ./build
+      </code>
+      directory and
+      all the files that you need to serve. After it runs, take a moment to examine the contents of
+      <code>
+        ./build
+      </code>
+      . After the second command runs, the feeds can be previewed at
+      <code>
+        http://localhost:7658
+      </code>
+      .
+    </p>
+    <ol>
+      <li>
+        Start by building the feeds. Make sure you&rsquo;re in your
+        <code>
+          virtualenv
+        </code>
+        if you&rsquo;re using it,
+        and run the command:
+      </li>
+    </ol>
+    <pre><code class="language-sh">./new.sh
+</code></pre>
+    <ol>
+      <li>
+        If you used
+        <code>
+          pip
+        </code>
+        or
+        <code>
+          virtualenv
+        </code>
+        then we will also be using the web server that is
+        built into I2P. When this step is complete, the feeds can be previewed at
+        <code>
+          http://localhost:7658
+        </code>
+        .
+      </li>
+    </ol>
+    <pre><code class="language-sh"># Use this command if you're on Debian or Ubuntu a service
+sudo -u i2psvc cp -r ./build /var/lib/i2p/i2p-config/eepsite/docroot/news
+</code></pre>
+    <pre><code class="language-sh"># Use this command if you're using a &quot;User&quot; install or the `.jar` package
+cp -r ./build $HOME/.i2p/eepsite/docroot/news
+</code></pre>
+    <h5>
+      If you used
+      <code>
+        docker
+      </code>
+      in the last step
+    </h5>
+    <p>
+      All you need to do is the following two commands. The first one will generate the
+      <code>
+        ./build
+      </code>
+      directory and all the files that you need to serve. After it runs, take
+      a moment to examine the contents of
+      <code>
+        ./build
+      </code>
+      . The second command takes the build
+      directory and places it in the document root of a light web server, which will serve
+      the built feeds on
+      <code>
+        http://localhost:3000
+      </code>
+      .
+    </p>
+    <ol>
+      <li>
+        The first command generates the feeds and turns them into signed bundles. This will
+        prompt you for a password.
+      </li>
+    </ol>
+    <pre><code class="language-sh">./docker-news.sh
+</code></pre>
+    <ol>
+      <li>
+        The second command runs the web server and serves the feeds on
+        <code>
+          localhost:3000
+        </code>
+      </li>
+    </ol>
+    <pre><code class="language-sh">./docker-newsxml.sh
+</code></pre>
+    <p>
+      Now you&rsquo;re ready to host your news feeds.
+    </p>
+    <h3>
+      Signing your Update
+    </h3>
+    <p>
+      Now you&rsquo;re prepared to build and sign newsfeeds, however, you still need to build
+      and sign the updates themselves. How you build the updates is going to depend on
+      how you build your app, but for the first example we&rsquo;re going to assume you&rsquo;re building
+      an I2P router from the
+      <code>
+        i2p.i2p
+      </code>
+      source. In
+      <code>
+        i2p.i2p
+      </code>
+      there is an
+      <code>
+        ant
+      </code>
+      target that
+      runs the signing command, you can use it with:
+    </p>
+    <pre><code class="language-sh">ant signed-updater200
+</code></pre>
+    <ol>
+      <li>
+        When you run this command, you&rsquo;ll be prompted to enter your signing key details. When you
+        see:
+      </li>
+    </ol>
+    <pre><code class="language-make">-sign-update:
+    [input] Enter su3 private signing key store:
+</code></pre>
+    <ol>
+      <li>
+        When you see:
+      </li>
+    </ol>
+    <pre><code class="language-make">[input] Enter su3 key name (you@mail.i2p):
+</code></pre>
+    <ol>
+      <li>
+        Finally, when you see:
+      </li>
+    </ol>
+    <pre><code class="language-make">[input] Enter su3 key password for you@mail.i2p:
+</code></pre>
+    <p>
+      Enter the password for your keystore. You will end up with a signed update file named
+      <code>
+        i2pupdate.su3
+      </code>
+      in your directory. That is your signed update file, which you will place
+      in your update server in the next step.
+    </p>
+    <p>
+      There are different kinds of I2P updates now, registered via the
+      <code>
+        UpdatePostProcessor
+      </code>
+      system. You can, for example, make an &ldquo;Executable&rdquo;
+      <code>
+        UpdatePostProcessor
+      </code>
+      or a &ldquo;DMG&rdquo;
+      <code>
+        UpdatePostProcessor
+      </code>
+      instead. When you generate an
+      <code>
+        .su3
+      </code>
+      for such a file, you may
+      once again use
+      <code>
+        i2pk
+      </code>
+      to make the process easier. For example, to build an Executable
+      based updater, use:
+    </p>
+    <pre><code class="language-sh">./i2pk -p $HOME/.i2p-plugin-keys \
+    -s you@mail.i2p \
+    -t RSA_SHA512_4096 \
+    -n newssigner \
+    -f EXE \
+    -c router sign i2pupdate.exe
+</code></pre>
+    <h3>
+      Setting up a Download Server
+    </h3>
+    <p>
+      Now you&rsquo;re able to notify your users that there is an update, but you need somewhere
+      to host the actual download. For the purposes of our tutorial, we&rsquo;ll assume you&rsquo;re
+      using the I2P site included with the Java I2P router, but any web server will do. This
+      will serve as a reliable backup distribution point for your I2P updates. Copy
+      <code>
+        i2pupdate.su3
+      </code>
+      to the document root.
+    </p>
+    <pre><code class="language-sh"># Use this command if you're on Debian or Ubuntu a service
+sudo -u i2psvc mkdir -p /var/lib/i2p/i2p-config/eepsite/docroot/files
+sudo -u i2psvc cp ./i2pupdate.su3 /var/lib/i2p/i2p-config/eepsite/docroot/files
+</code></pre>
+    <pre><code class="language-sh"># Use this command if you're using a &quot;User&quot; install or the `.jar` package
+mkdir -p $HOME/.i2p/eepsite/docroot/files
+cp ./i2pupdate.su3 $HOME/.i2p/eepsite/docroot/files
+</code></pre>
+    <p>
+      If you don&rsquo;t want to use that, any static file server with an I2P tunnel pointed at
+      it will do. For example, you can use this:
+    </p>
+    <pre><code class="language-sh"># This is a suggestion for people who want to use docker, for instance
+mkdir -p &quot;$HOME/update-server&quot;
+cp ./i2pupdate.su3 &quot;$HOME/update-server&quot;
+docker run -d \
+    -v &quot;$HOME/update-server&quot;:/web \
+    -p 8080:8080 \
+    halverneus/static-file-server:latest
+</code></pre>
+    <p>
+      or any other web server you want.
+    </p>
+    <h3>
+      Setting up a Bittorrent Tracker
+    </h3>
+    <p>
+      Strictly speaking you don&rsquo;t need to set up your own tracker, but I think you should.
+      It&rsquo;s easy and reliable to host one using the
+      <code>
+        zzzot
+      </code>
+      plugin on a Java I2P router.
+    </p>
+    <pre><code class="language-zzzot```">pasting the URL below into the **`Installation from URL`** field on
+[the Router Plugins page](http://127.0.0.1:7657/configplugins):
+
+</code></pre>
+    <p>
+      <a href="http://stats.i2p/i2p/plugins/zzzot.su3">
+        http://stats.i2p/i2p/plugins/zzzot.su3
+      </a>
+    </p>
+    <pre><code>
+and clicking the **`Install plugin`** button.
+
+### Self-Publishing your update
+
+Finally, now that you've got the news server, the news feed generator, the download
+server, and an updater published, you're ready to create the last thing you need, your
+custom newsfeed. This will **replace** the example newsfeed we built earlier. To do
+this we'll need to generate a torrent of our router update using our open tracker,
+generate a `releases.json` file describing where to find the torrent and the update
+packages, and write a news entry for your router update.
+
+1. Using the `.su3` package you generated in the &quot;Signing your Update&quot; step, generate
+a .torrent of your update and convert it to a magnet link. Every torrent generator I have
+tried is capable of generating an I2P torrent, they aren't substantially different from
+regular torrents for the most part. I often use `mktorrent` because most package managers
+have it and because it's pretty easy to automate.
+
+```sh
+# Using mktorrent
+mktorrent --announce=&quot;http://yourzzzotopentrackerhasabase32urlthatisprettylong.b32.i2p/a&quot; \
+   --web-seed=&quot;http://yoursite.i2p/files/i2pupdate.su3&quot; \
+   i2pupdate.su3
+</code></pre>
+    <ol>
+      <li>
+        Load the file named
+        <code>
+          i2pupdate.su3.torrent
+        </code>
+        into I2PSnark without starting it. Copy the
+        <code>
+          i2pupdate.su3
+        </code>
+        file into the
+        <code>
+          i2psnark
+        </code>
+        directory, then start the torrent from the I2PSnark
+        webUI. The torrent will appear as fully downloaded, and you will be ready to seed. As a last
+        step, copy the &ldquo;Magnet Link&rdquo; for your
+        <code>
+          .su3.torrent
+        </code>
+        from the WebUI.
+      </li>
+    </ol>
+    <pre><code class="language-sh"># Use this command if you're on Debian or Ubuntu a service
+sudo -u i2psvc cp ./i2pupdate.su3 /var/lib/i2p/i2p-config/i2psnark
+</code></pre>
+    <pre><code class="language-sh"># Use this command if you're using a &quot;User&quot; install or the `.jar` package
+cp ./i2pupdate.su3 $HOME/.i2p/i2psnark
+</code></pre>
+    <ol>
+      <li>
+        Next we need to create the
+        <code>
+          releases.json
+        </code>
+        file which will be used to generate part of our
+        newsfeed that informs I2P routers that they need to update, and where to get those updates
+        from. You will need to add this file to your
+        <code>
+          i2p.newsxml
+        </code>
+        checkout. A
+        <code>
+          releases.json
+        </code>
+        file
+        contains: the date the torrent was created, the minimum version required to apply the automatic
+        update, the version that I2P will be updated to, and the download locations. This is a recent
+        example of an
+        <code>
+          releases.json
+        </code>
+        file:
+      </li>
+    </ol>
+    <pre><code class="language-json">[
+  {
+    &quot;date&quot;: &quot;2022-02-21&quot;,
+    &quot;version&quot;: &quot;1.7.0&quot;,
+    &quot;minVersion&quot;: &quot;0.9.9&quot;,
+    &quot;minJavaVersion&quot;: &quot;1.8&quot;,
+    &quot;updates&quot;: {
+      &quot;su3&quot;: {
+        &quot;torrent&quot;: &quot;magnet:?xt=urn:btih:f49db26dd75f61d8d2b4a187bc3d61d71c6dee09&amp;dn=i2pupdate-1.7.0.su3&amp;tr=http://tracker2.postman.i2p/announce.php&quot;,
+        &quot;url&quot;: [
+          &quot;http://stats.i2p/i2p/1.7.0/i2pupdate.su3&quot;,
+          &quot;http://mgp6yzdxeoqds3wucnbhfrdgpjjyqbiqjdwcfezpul3or7bzm4ga.b32.i2p/releases/1.7.0/i2pupdate.su3&quot;
+        ]
+      }
+    }
+  }
+]
+</code></pre>
+    <p>
+      Note the
+      <code>
+        &quot;torrent:&quot;
+      </code>
+      field, where you should place the generated magnet link you copied from
+      the I2PSnark Web UI, and the
+      <code>
+        &quot;url:&quot;
+      </code>
+      field, where you should place the download links to your
+      <code>
+        .su3
+      </code>
+      files. When you&rsquo;re done editing your
+      <code>
+        releases.json
+      </code>
+      file, copy it to the
+      <code>
+        ./data
+      </code>
+      directory
+      corresponding to it&rsquo;s
+      <code>
+        os
+      </code>
+      /
+      <code>
+        branch
+      </code>
+      in
+      <code>
+        i2p.newsxml
+      </code>
+      .
+    </p>
+    <ol>
+      <li>
+        Now you should create a news entry for your update. Change directory to your
+        <code>
+          i2p.newsxml
+        </code>
+        checkout, run the command:
+      </li>
+    </ol>
+    <pre><code class="language-sh">./create_new_entry.sh
+</code></pre>
+    <p>
+      to automatically start editing a new entry in your custom newsfeed. If you&rsquo;re building for a
+      specific OS or branch, then set them in the
+      <code>
+        I2P_OS
+      </code>
+      and
+      <code>
+        I2P_BRANCH
+      </code>
+      environment variables.
+      Check the code comments or the example below for more custom environment arguments.
+    </p>
+    <pre><code class="language-sh"># This is an example of what I would run
+TITLE=&quot;Update for Windows Jpackage 1.7.0&quot; AUTHOR=idk EDITOR=mousepad I2P_OS=win I2P_BRANCH=beta ./create_new_entry.sh
+</code></pre>
+    <p>
+      Once you have finished editing, your newsfeed is ready to generate and sign.
+    </p>
+    <ol>
+      <li>
+        Now you&rsquo;re ready to build the newsfeed which you will finally be able to use. Return
+        to the step called &ldquo;Signing your Update&rdquo; and repeat those steps with your new feeds. Copy
+        them over to your news server. Your updates are now ready to distribute. Keep an eye on your
+        torrent client while the peers go up.
+      </li>
+    </ol>
+    <div id="sourcecode">
+      <span id="sourcehead">
+        <strong>
+          Get the source code:
+        </strong>
+      </span>
+      <ul>
+        <li>
+          <a href="https://github.com/eyedeekay/Hopefully-Holistic-Guide-to-I2P-Dev-Build-Update-Hosting">
+            Source Repository: (https://github.com/eyedeekay/Hopefully-Holistic-Guide-to-I2P-Dev-Build-Update-Hosting)
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <a href="#show">
+        Show license
+      </a>
+      <div id="show">
+        <div id="hide">
+          <pre><code>This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <https://unlicense.org>
+</code></pre>
+          <a href="#hide">
+            Hide license
+          </a>
+        </div>
+      </div>
+    </div>
+    <div>
+      <iframe src="https://snowflake.torproject.org/embed.html" width="320" height="240" frameborder="0" scrolling="no"></iframe>
+    </div>
+    <div>
+      <a href="https://geti2p.net/">
+        <img src="i2plogo.png"></img>
+        I2P
+      </a>
+    </div>
+  </body>
 </html>
